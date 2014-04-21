@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
 	public static int playIndex = 0;
 	public static Boolean canPlay = true;
 	Socket socket;
-	String SERVER_IP = "192.168.1.2";
+	String SERVER_IP = "192.168.1.7";
 	int SERVER_PORT=6000;
 	int SERVERPORT = 6000;
 	public static String str = "";
@@ -379,12 +379,12 @@ public class MainActivity extends Activity {
 		@Override
 		public void run() {
 		
+			Vibrator v = (Vibrator) MainActivity.this.getSystemService(Context.VIBRATOR_SERVICE);
 			if(msg!=null && msg.trim()!="")
 			{
 				//Toast.makeText(getApplicationContext(), "msg:"+msg, Toast.LENGTH_SHORT).show();
 				if(msg=="call")
 				{
-					Vibrator v = (Vibrator) MainActivity.this.getSystemService(Context.VIBRATOR_SERVICE);
 					v.vibrate(2500);
 					//str+="Vibrate\n";
 					//if(last_vid!=null)
@@ -396,6 +396,11 @@ public class MainActivity extends Activity {
 					TextView t1 = (TextView)findViewById(R.id.reserveNum);
 					t1.setText(reserveNum);
 					startPlaying();
+				}
+				else if(msg=="reset")
+				{
+					str+="reset\n";
+					v.cancel();
 				}
 			}
 		}
