@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<script>
+			var reserveNumber = 0;
+			//----------------Commands-----------------------
+			function reserve()
+			{
+				client.reserve();
+			}
+			function startVibrate(miliSecond)
+			{
+				if(typeof miliSecond == 'undefined')
+					var miliSecond = 2500;
+				client.doVibrate(miliSecond);
+			}
+			function stopVibrate()
+			{
+				client.undoVibrate();
+			}
+			//----------------Events-------------------------
+			function reserveDone(reserveNum)
+			{
+				//Reserve Done
+				reserveNumber = reserveNum;
+			}
+			function call()
+			{
+				//Calling
+			}
+			function reset()
+			{
+				//reseting
+			}
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

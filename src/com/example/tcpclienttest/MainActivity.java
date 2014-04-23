@@ -14,10 +14,10 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 import org.apache.http.conn.util.InetAddressUtils;
-
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,17 +25,23 @@ import android.os.Vibrator;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+@SuppressLint({ "SetJavaScriptEnabled", "JavascriptInterface" })
+@SuppressWarnings("unused")
 public class MainActivity extends Activity {
 	public static UpdateClass[] updates;
 	public static int UpdatesIndex = 0;
@@ -58,6 +64,8 @@ public class MainActivity extends Activity {
 	public static String reserveNum = "0";
 	Handler updateConversationHandler;
 	Thread serverThread = null;
+	static WebView mywebview;
+	static Vibrator v;
 	
 	public static String getIPAddress(boolean useIPv4) {
         try {
@@ -103,6 +111,7 @@ public class MainActivity extends Activity {
 	  
 	void startPlaying()
 	{
+		/*
 		try {
 			if(canPlay)
 			{
@@ -130,75 +139,21 @@ public class MainActivity extends Activity {
 		} catch (Exception e) {
 			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 		}
+		*/
 	}
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		updateConversationHandler = new Handler();
+		v = (Vibrator) MainActivity.this.getSystemService(Context.VIBRATOR_SERVICE);
 		createDirectory();
+		/*
 		vid1 = (VideoView)findViewById(R.id.vid1);
 		vid1.setMediaController(new MediaController(getApplicationContext()));
 		vid1.setVisibility(View.GONE);
 		String comm = clientId+",7,"+getIPAddress(true)+"|"+batteryLevel;
 		sendCommand(comm);
-		/*
-		Button DownBtn = (Button)findViewById(R.id.download);
-		DownBtn.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				startPlaying();
-			}
-		});
-		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-		Button btn1 = (Button) findViewById(R.id.btn1);
-		btn1.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-					Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
-					EditText ed1 = (EditText)findViewById(R.id.ed1);
-					ed1.setText(str);
-			}
-		});
-		Button btn2 = (Button) findViewById(R.id.btn2);
-		btn2.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				EditText ed1 = (EditText)findViewById(R.id.ed1);
-				Toast.makeText(getApplicationContext(), ed1.getText().toString(), Toast.LENGTH_SHORT).show();
-				sendCommand(ed1.getText().toString());
-			}
-		});
-		Button startbtn = (Button)findViewById(R.id.start);
-		startbtn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				String comm = clientId+",7,"+getIPAddress(true)+"|"+batteryLevel;
-				sendCommand(comm);
-			}
-		});
-		Button dateTimeBtn = (Button) findViewById(R.id.dateTime);
-		dateTimeBtn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				String comm = clientId+",8";
-				sendCommand(comm);
-			}
-		});
-		Button lowBatteryBtn = (Button)findViewById(R.id.lowBattery);
-		lowBatteryBtn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				String comm = clientId+",10";
-				sendCommand(comm);
-			}
-		});
-		*/
 		Button reserveBtn = (Button) findViewById(R.id.reserve);
 		reserveBtn.setOnClickListener(new OnClickListener() {
 			
@@ -216,11 +171,28 @@ public class MainActivity extends Activity {
 				Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
 			}
 		});
+		*/
+		mywebview = (WebView) findViewById(R.id.webview1);
+		WebSettings webSettings = mywebview.getSettings();
+		//Intent inten = getIntent();
+		//int kala_miniGroup_id = inten.getIntExtra("kala_miniGroup_id", -1);
+		mywebview.addJavascriptInterface(new ClientClass(this), "client");
+		webSettings.setJavaScriptEnabled(true);
+		mywebview.loadUrl("file:///android_asset/html/client.html");
+		if(android.os.Build.VERSION.SDK_INT==Build.VERSION_CODES.JELLY_BEAN)
+			fixPro();
 		this.serverThread = new Thread(new ServerThread());
 		this.serverThread.start();
 
 	}
 
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	public void fixPro()
+	{
+		mywebview.getSettings().setAllowUniversalAccessFromFileURLs(true);
+		mywebview.getSettings().setAllowFileAccessFromFileURLs(true);
+	}
+	
 	void sendCommand(String comm)
 	{
 		ClientThread ct = new ClientThread();
@@ -309,7 +281,7 @@ public class MainActivity extends Activity {
 					//String read = String.valueOf(target);
 					read = read.trim();
 					String cIp = clientSocket.getInetAddress().toString().replace("/", "");
-					DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
+					//DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
 					if(read!=null && !read.isEmpty())
 					{
 						//str += "cmd :'"+read+"'\n";
@@ -379,28 +351,31 @@ public class MainActivity extends Activity {
 		@Override
 		public void run() {
 		
-			Vibrator v = (Vibrator) MainActivity.this.getSystemService(Context.VIBRATOR_SERVICE);
 			if(msg!=null && msg.trim()!="")
 			{
 				//Toast.makeText(getApplicationContext(), "msg:"+msg, Toast.LENGTH_SHORT).show();
 				if(msg=="call")
 				{
-					v.vibrate(2500);
+					//v.vibrate(2500);
 					//str+="Vibrate\n";
 					//if(last_vid!=null)
 						//((ViewManager)last_vid.getParent()).removeView(last_vid);
-					
+					mywebview.loadUrl("javascript:call();");
 				}
 				else if(msg=="res")
 				{
+					/*
 					TextView t1 = (TextView)findViewById(R.id.reserveNum);
 					t1.setText(reserveNum);
 					startPlaying();
+					*/
+					mywebview.loadUrl("javascript:reserveDone("+reserveNum+");");
 				}
 				else if(msg=="reset")
 				{
 					str+="reset\n";
-					v.cancel();
+					//v.cancel();
+					mywebview.loadUrl("javascript:reset();");
 				}
 			}
 		}
