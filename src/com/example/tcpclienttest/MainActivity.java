@@ -94,9 +94,10 @@ public class MainActivity extends Activity {
 	
 	void createDirectory()
 	{
-		File directory = new File(Environment.getExternalStorageDirectory()+File.separator+"mohsen");
+		File directory = new File(Environment.getExternalStorageDirectory()+File.separator+"artan");
 		if(!directory.isDirectory())
 			directory.mkdirs();
+		str += "Create directory\n";
 	}
 
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
@@ -148,6 +149,8 @@ public class MainActivity extends Activity {
 		updateConversationHandler = new Handler();
 		v = (Vibrator) MainActivity.this.getSystemService(Context.VIBRATOR_SERVICE);
 		createDirectory();
+		String comm = clientId+",7,"+getIPAddress(true)+"|"+batteryLevel;
+		sendCommand(comm);
 		/*
 		vid1 = (VideoView)findViewById(R.id.vid1);
 		vid1.setMediaController(new MediaController(getApplicationContext()));
@@ -183,6 +186,7 @@ public class MainActivity extends Activity {
 			fixPro();
 		this.serverThread = new Thread(new ServerThread());
 		this.serverThread.start();
+		str += "server started\n";
 
 	}
 
@@ -214,7 +218,7 @@ public class MainActivity extends Activity {
 				outToServer.writeChars(commandToSend+"\n");
 				int bytes = infromServer.read(buffer);
 				String buf = new String(buffer, 0, bytes);
-				str += commandToSend+" -> "+buf+"\n";
+				//str += commandToSend+" -> "+buf+"\n";
 				if(commandToSend.contains("1,9"))
 				{
 					reserveNum = buf;
@@ -282,9 +286,10 @@ public class MainActivity extends Activity {
 					read = read.trim();
 					String cIp = clientSocket.getInetAddress().toString().replace("/", "");
 					//DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
+					//str += "Ip : "+cIp+"\n";
 					if(read!=null && !read.isEmpty())
 					{
-						//str += "cmd :'"+read+"'\n";
+						str += "cmd :"+read+"\n";
 						CommandClass cc = new CommandClass(read);
 						if(cc.isValid)
 						{
@@ -308,7 +313,7 @@ public class MainActivity extends Activity {
 									//outToClient.writeChars("khaak");
 									break;
 								case 4:
-									str+="Update\n";
+									str+="Update ["+cc.data+"]\n";
 									String[] updateAllTmp = cc.data.split("\\|");
 									updates = new UpdateClass[updateAllTmp.length];
 									downloadTask = new DownloadTask[updateAllTmp.length];//(MainActivity.this);
@@ -318,12 +323,12 @@ public class MainActivity extends Activity {
 										String zero_shit = String.valueOf((char)0);
 										updateAllTmp[i] = updateAllTmp[i].replaceAll(zero_shit, "");
 										String[] updateTmp = updateAllTmp[i].split("\\#");
-										updates[i] = new UpdateClass(Integer.valueOf(updateTmp[0].trim()), updateTmp[1].trim());
-										downloadTask[i].execute(updates[i].linkAddr,updates[i].order+".mp4");
-										str += "update order='"+updates[i].order+"' addr='"+updates[i].linkAddr+"'\n";
+										updates[i] = new UpdateClass(Integer.valueOf(updateTmp[0].trim()), updateTmp[1].trim(),Integer.valueOf(updateTmp[2].trim()));
+										downloadTask[i].execute(updateTmp[1].trim(),Integer.valueOf(updateTmp[0].trim())+".mp4");
+										//str += "update order='"+updates[i].order+"' addr='"+updates[i].linkAddr+"'\n";
 									}
 									Updated = false;
-									read = "update:";
+									read = "update";
 									//outToClient.writeChars("khaak");
 									break;
 							}
@@ -360,7 +365,7 @@ public class MainActivity extends Activity {
 					//str+="Vibrate\n";
 					//if(last_vid!=null)
 						//((ViewManager)last_vid.getParent()).removeView(last_vid);
-					mywebview.loadUrl("javascript:call();");
+					mywebview.loadUrl("javascript:call_client();");
 				}
 				else if(msg=="res")
 				{
@@ -369,13 +374,20 @@ public class MainActivity extends Activity {
 					t1.setText(reserveNum);
 					startPlaying();
 					*/
-					mywebview.loadUrl("javascript:reserveDone("+reserveNum+");");
+					//Toast.makeText(getApplicationContext(), "javascript:reserveDone(100);", Toast.LENGTH_SHORT).show();
+					str += "Reserve !\n";
+					mywebview.loadUrl("javascript:reserveDone('"+reserveNum+"');");
 				}
 				else if(msg=="reset")
 				{
 					str+="reset\n";
 					//v.cancel();
 					mywebview.loadUrl("javascript:reset();");
+				}
+				else if(msg=="update")
+				{
+					str+="Update!";
+					
 				}
 			}
 		}

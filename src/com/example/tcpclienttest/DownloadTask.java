@@ -48,7 +48,7 @@ class DownloadTask extends AsyncTask<String, Integer, String> {
 
          // download the file
          input = connection.getInputStream();
-         output = new FileOutputStream(Environment.getExternalStorageDirectory().getPath()+File.separator+"mohsen"+File.separator+sUrl[1]);
+         output = new FileOutputStream(Environment.getExternalStorageDirectory().getPath()+File.separator+"artan"+File.separator+sUrl[1]);
          MainActivity.str += "Writing to file output ...\n";
          byte data[] = new byte[4096];
          long total = 0;

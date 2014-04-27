@@ -1,11 +1,21 @@
+<!DOCTYPE html>
 <html>
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<script src="../js/jquery-2.0.3.min.js"></script>
+		<script src="../js/jquery.mobile-1.3.1.min.js"></script>
+		<link rel="stylesheet" href="../css/jquery.mobile-1.3.1.min.css">
 		<script>
 			var reserveNumber = 0;
+			$(document).ready(function(){
+				play_bt();
+				
+			});
 			//----------------Commands-----------------------
 			function reserve()
 			{
-				client.reserve();
+				var temp = client.reserve();
+				$("#msg_log").html('درخواست ارسال شد');
 			}
 			function startVibrate(miliSecond)
 			{
@@ -19,24 +29,133 @@
 			}
 			function getFilms()
 			{
-				var films = client.getUpdates().split(',');
+				//var films = client.getUpdates().split(',');
+				var films = client.getUpdates();
+				$("#msg_log").html("لیست ها:'"+films+"'<br>");
+				return(films);
 			}
 			//----------------Events-------------------------
 			function reserveDone(reserveNum)
 			{
 				//Reserve Done
-				reserveNumber = reserveNum;
+				//reserveNumber = reserveNum;
+				$("#msg_log").html('رزرو با موفقیت انجام شد:'+reserveNum);
 			}
-			function call()
+			function call_client()
 			{
 				//Calling
+				$("#msg_log").html('شروع ویبره');
+				startVibrate(3000);
 			}
 			function reset()
 			{
 				//reseting
+				stopVibrate();
+				$("#msg_log").html('پایان');
+			}
+			var k = 0;
+			var sr = [];
+			function play_bt()
+			{
+				var vv = $("#v1");
+				if(typeof sr[k]=="undefined")
+					k=0;
+				$("#v1").html(sr[k].so);
+				$("#v1").get(0).play();
+				setTimeout(function(){
+					play_bt();
+				},parseInt(sr[k].tim,10)*1000);
+				$("#msg_log").append("name:"+sr[k].so+" time:"+sr[k].tim+"<br>");
+				k++;
+			}
+			function createFilmList()
+			{
+				var fi= getFilms();
+				var films =fi.split(',');
+				sr=[];
+				for(var j=0;j<films.length;j++)
+				{
+					var tmp={};
+					tmp['so'] = '<source src="/sdcard/artan/'+films[j].split('#')[0]+'" type="video/mp4">';
+					tmp['tim']=films[j].split('#')[1];
+					sr.push(tmp);
+				}
+				for(var j=0;j<sr.length;j++)
+				{
+					$("#msg_log").append(sr[j].so+'<br>');
+					$("#msg_log").append(sr[j].tim+'<br>');
+				}
+				k=0;
+				play_bt();
+			}
+			var counter=0;
+			function show_log()
+			{
+				counter++;
+				var tt = client.showLog();
+				tt.replace("\n","<br>");
+				//$("#msg_log1").html(tt+" counter="+counter+"<br>");
 			}
 		</script>
 	</head>
 	<body>
+		<table style="width:100%;" border="1" >
+			<tr>
+				<td style="height:242px;" >
+					<video id="v1" width="320" height="240" controls  >
+						<source src="" type="video/mp4">
+					</video>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="reserve_div" >
+						<button data-theme="c" onclick="reserve();" >
+						در خواست شماره پرونده
+						</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="" >
+						<button data-theme="c" onclick="client.killAll();" >
+						خروج
+						</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="" >
+						<button data-theme="c" onclick="createFilmList();" >
+						فیلم
+						</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="" >
+						<button data-theme="d" onclick="play_bt();" >
+						شروع  پخش
+						</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="" >
+						<button data-theme="c" onclick="show_log();" >
+						لاگ
+						</button>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div id="msg_log" >
+		</div>
+		<div id="msg_log1" >
+		</div>
 	</body>
 </html>
