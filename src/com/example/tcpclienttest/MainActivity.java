@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
 	public static int playIndex = 0;
 	public static Boolean canPlay = true;
 	Socket socket;
-	String SERVER_IP = "192.168.1.7";
+	String SERVER_IP = "192.168.1.70";
 	int SERVER_PORT=6000;
 	int SERVERPORT = 6000;
 	public static String str = "";

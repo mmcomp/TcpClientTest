@@ -8,14 +8,13 @@
 		<script>
 			var reserveNumber = 0;
 			$(document).ready(function(){
-				play_bt();
-				
+				blink_div();
 			});
 			//----------------Commands-----------------------
 			function reserve()
 			{
 				var temp = client.reserve();
-				$("#msg_log").html('درخواست ارسال شد');
+				$("#msg_log").html('درخواست ارسال شد ...');
 			}
 			function startVibrate(miliSecond)
 			{
@@ -40,33 +39,58 @@
 				//Reserve Done
 				//reserveNumber = reserveNum;
 				$("#msg_log").html('رزرو با موفقیت انجام شد:'+reserveNum);
+				$(".befor_res").hide();
+				$(".after_res").show();
+				$("#parvande_id").html('شماره پرونده شما:'+reserveNum);
+				$("#iframe_id").prop('src','http://192.168.1.4/?parvande_id='+reserveNum);
+				isPlay=true;
+				k=0;
+				play_bt();
 			}
 			function call_client()
 			{
 				//Calling
-				$("#msg_log").html('شروع ویبره');
 				startVibrate(3000);
+				$(".on_res").show();
+				$(".befor_res").hide();
+				$(".after_res").hide();
+				$("#box").fadeTo(100, 0.1).fadeTo(200, 1.0);
+				isPlay=false;
+				play_bt();
 			}
 			function reset()
 			{
 				//reseting
 				stopVibrate();
-				$("#msg_log").html('پایان');
+				$("#msg_log").html('');
+				$(".befor_res").show();
+				$(".after_res").hide();
+				$(".on_res").hide();
+				isPlay=false;
+				play_bt();
 			}
 			var k = 0;
-			var sr = [];
+			var sr = [{"so":'<source src="/sdcard/artan/0.mp4" type="video/mp4">',"tim":15},{"so":'<source src="/sdcard/artan/1.mp4" type="video/mp4">',"tim":15}];
+			var isPlay=false;
 			function play_bt()
 			{
-				var vv = $("#v1");
-				if(typeof sr[k]=="undefined")
-					k=0;
-				$("#v1").html(sr[k].so);
-				$("#v1").get(0).play();
-				setTimeout(function(){
-					play_bt();
-				},parseInt(sr[k].tim,10)*1000);
-				$("#msg_log").append("name:"+sr[k].so+" time:"+sr[k].tim+"<br>");
-				k++;
+				if(isPlay)
+				{
+					var vv = $("#v1");
+					if(typeof sr[k]=="undefined")
+						k=0;
+					$("#v1").html(sr[k].so);
+					$("#v1").get(0).play();
+					setTimeout(function(){
+						play_bt();
+					},parseInt(sr[k].tim,10)*1000);
+					$("#msg_log").append("name:"+sr[k].so+" time:"+sr[k].tim+"<br>");
+					k++;
+				}
+				else
+				{
+					$("#v1").get(0).pause();
+				}
 			}
 			function createFilmList()
 			{
@@ -96,27 +120,88 @@
 				tt.replace("\n","<br>");
 				//$("#msg_log1").html(tt+" counter="+counter+"<br>");
 			}
+			function blink_div()
+			{
+				$("#call_tr td").fadeTo(100, 0.1).fadeTo(200, 1.0)
+				setTimeout(function(){
+					blink_div();
+				},1000);
+			}
 		</script>
+		<style>
+			.pointer
+			{
+				cursor:pointer;
+			}
+			.drop_down
+			{
+				border:solid 1px #666666;
+				-webkit-border-radius: 5px;
+				-moz-border-radius: 5px;
+				border-radius: 5px;
+				padding:10px;
+				font-size:25px;
+				margin:5px;
+				background-image: -ms-linear-gradient(bottom, #999C8B 0%, #E9ECF5 100%);
+
+				/* Mozilla Firefox */ 
+				background-image: -moz-linear-gradient(bottom, #999C8B 0%, #E9ECF5 100%);
+
+				/* Opera */ 
+				background-image: -o-linear-gradient(bottom, #999C8B 0%, #E9ECF5 100%);
+
+				/* Webkit (Safari/Chrome 10) */ 
+				background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #999C8B), color-stop(1, #E9ECF5));
+
+				/* Webkit (Chrome 11+) */ 
+				background-image: -webkit-linear-gradient(bottom, #999C8B 0%, #E9ECF5 100%);
+
+				/* W3C Markup, IE10 Release Preview */ 
+				background-image: linear-gradient(to top, #999C8B 0%, #E9ECF5 100%);
+			}
+		</style>
 	</head>
 	<body>
-		<table style="width:100%;" border="1" >
-			<tr>
+		<table style="width:100%;" border="0" >
+			<tr style="display:none" id="video_tr" class="after_res" >
 				<td style="height:242px;" >
-					<video id="v1" width="320" height="240" controls  >
+					<video id="v1" width="300" height="240" controls  >
 						<source src="" type="video/mp4">
 					</video>
 				</td>
 			</tr>
-			<tr>
+			<tr style="display:none" id="parvande_tr" class="after_res" >
+				<td style="height:242px;" valign="top" >
+					<div id="parvande_id" style="border-buttom:solid 1px #3333333;direction:rtl;" >
+					</div>
+					<div id="parvande_dev" style="overflow:scroll;" >
+						<iframe id="iframe_id" >
+						</iframe>
+					</div>
+				</td>
+			</tr>
+			<tr class="befor_res" >
 				<td>
+					<div id="msg_log" >
+					</div>
 					<div id="reserve_div" >
-						<button data-theme="c" onclick="reserve();" >
+						<button data-theme="b" onclick="reserve();" >
 						در خواست شماره پرونده
 						</button>
 					</div>
 				</td>
 			</tr>
-			<tr>
+			<tr class="befor_res" id="logo_tr" >
+				<td>
+					<img width="100%" src="../img/bg.png"> 
+				</td>
+			</tr>
+			<tr class="on_res" id="call_tr" style="display:none;background:#333;" >
+				<td style="background-color:#444;" >
+					<img width="100%" src="../img/nobat.png"> 
+				</td>
+			</tr>
+			<tr style="display:none" >
 				<td>
 					<div id="" >
 						<button data-theme="c" onclick="client.killAll();" >
@@ -125,7 +210,7 @@
 					</div>
 				</td>
 			</tr>
-			<tr>
+			<tr style="display:none" >
 				<td>
 					<div id="" >
 						<button data-theme="c" onclick="createFilmList();" >
@@ -134,7 +219,7 @@
 					</div>
 				</td>
 			</tr>
-			<tr>
+			<tr style="display:none" >
 				<td>
 					<div id="" >
 						<button data-theme="d" onclick="play_bt();" >
@@ -143,7 +228,7 @@
 					</div>
 				</td>
 			</tr>
-			<tr>
+			<tr style="display:none" >
 				<td>
 					<div id="" >
 						<button data-theme="c" onclick="show_log();" >
